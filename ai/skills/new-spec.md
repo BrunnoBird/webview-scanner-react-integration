@@ -14,13 +14,18 @@ Exemplos:
 
 ## Input Necessário
 - Descrição da feature (o que ela faz, quem a usa, quando é disparada)
-- Opcionalmente: caminho da PRD aprovada em `prds/` — se fornecida, os campos Purpose, Usuários e contexto serão derivados do PRD automaticamente, sem pedir que o dev repita informação
+- Opcionalmente: caminho da PRD aprovada em `prds/` — se fornecida, os campos Purpose, usuários e contexto serão derivados do PRD automaticamente, sem pedir que o dev repita informação
 - Opcionalmente: quais outros módulos ela toca
+
+---
 
 ## Output
 
-### Nível 1 (padrão — sempre retornar isso primeiro)
-Esqueleto da spec com **apenas os campos obrigatórios preenchidos**. Seções de behavior, edge cases e open questions ficam vazias para o desenvolvedor preencher/validar.
+### Nível único — Spec completa + Checklist + Plano Técnico
+
+A spec é gerada **de uma só vez** com todos os campos preenchidos e o plano técnico de implementação ao final. O objetivo é que o dev receba um artefato completo para revisar e aprovar — sem necessidade de iterações por nível.
+
+Se alguma informação não puder ser inferida, preencher com a melhor suposição e marcar com `⚠️ suposição — confirmar com o time`.
 
 ```markdown
 # Spec: [Nome da Feature]
@@ -34,10 +39,14 @@ Esqueleto da spec com **apenas os campos obrigatórios preenchidos**. Seções d
 ## Purpose
 [Uma frase descrevendo o objetivo.]
 
+> Derivado de: `prds/[nome].prd.md`
+
+---
+
 ## Contracts
 
-### Types
-[Data classes, sealed classes e interfaces Kotlin — apenas assinaturas, sem implementação.]
+### Types (Kotlin)
+[Data classes, sealed classes, interfaces e enums — apenas assinaturas, sem implementação.]
 
 ### Inputs
 [O que dispara esta feature.]
@@ -45,30 +54,36 @@ Esqueleto da spec com **apenas os campos obrigatórios preenchidos**. Seções d
 ### Outputs / Side Effects
 [O que ela produz ou causa.]
 
+---
+
 ## Behavior
 
 ### Happy Path
-[Deixar em branco para o dev preencher]
+[Passo a passo numerado do fluxo principal — do início até o resultado final.]
 
 ### Error / Edge Cases
-[Deixar em branco para o dev preencher]
+[Tabela ou lista de cenários alternativos com origem e comportamento esperado.]
+
+---
 
 ## Integration Points
-[Lista de módulos tocados]
+
+| Módulo | Papel |
+|---|---|
+| [arquivo ou módulo] | [responsabilidade] |
+
+---
 
 ## Out of Scope
-[Deixar em branco para o dev preencher]
+[Lista explícita do que NÃO entra nesta entrega — evita scope creep.]
+
+---
 
 ## Open Questions
-[Deixar em branco para o dev preencher]
-```
+[Dúvidas técnicas ou de produto com contexto — a resolver antes de iniciar a implementação.]
 
-### Nível 2 (on request: "preenche a spec")
-Spec completamente preenchida com comportamento, edge cases e open questions sugeridas.
+---
 
-Ao final da spec, incluir obrigatoriamente a seção de checklist:
-
-```markdown
 ## ✅ Checklist de Completude
 
 ✅ / ❌  Purpose em uma frase clara
@@ -87,33 +102,45 @@ Ao final da spec, incluir obrigatoriamente a seção de checklist:
 ✅ / ❌  Escopo do Coroutine (viewModelScope, lifecycleScope) endereçado
 
 **Resultado: PRONTA PARA APROVAÇÃO / PRECISA DE REVISÃO**
-```
 
-### Nível 3 (on request: "plano técnico")
-Plano de implementação técnica derivado da spec. Sem código — apenas o plano arquitetural com princípios SOLID aplicados.
+---
 
-```
-Arquivos a criar:
-  feature/[name]/ui/[Name]Screen.kt          ← Screen Composable (UI + eventos)
-  feature/[name]/viewmodel/[Name]ViewModel.kt ← ViewModel (estado + lógica)
-  feature/[name]/ui/[Name]Screen.test.kt      ← Compose UI tests
+## 📐 Plano Técnico de Implementação
 
-Arquivos a modificar:
-  domain/repository/[Name]Repository.kt       ← interface a adicionar/ajustar
+> Sem código — apenas o plano arquitetural para orientar a implementação.
 
-Padrões SOLID aplicados:
+### Arquivos a criar
+  feature/[name]/ui/[Name]Screen.kt              ← Screen Composable (UI + eventos)
+  feature/[name]/viewmodel/[Name]ViewModel.kt     ← ViewModel (estado + lógica MVI)
+  [outros arquivos conforme a feature]
+
+### Arquivos a modificar
+  [ex: AndroidManifest.xml — permissões]
+  [ex: domain/repository/[Name]Repository.kt — novo contrato]
+
+### Padrões SOLID aplicados
   - S — [Name]Screen lida apenas com UI; [Name]ViewModel lida apenas com estado
-  - D — ViewModel recebe [Name]Repository via Hilt — não instancia
+  - O — comportamentos variáveis injetados como parâmetros / lambdas, não hardcoded
+  - D — ViewModel recebe dependências via Koin — não instancia diretamente
 
-Ordem de implementação recomendada:
-  1. [arquivo sem dependências internas]
+### Ordem de implementação recomendada
+  1. [arquivo sem dependências internas — ex: modelos de domínio, enums]
   2. [arquivo que depende do anterior]
+  3. [Screen Composable — último, pois depende do ViewModel]
 
-Próximo passo: invoke new-screen / new-composable / new-repository
+### Próximo passo
+  Diga "aprovado" para o agente atualizar o status do arquivo.
+  Em seguida, invocar: new-screen / new-composable / new-repository
 ```
+
+---
 
 ## Constraints
+- Escrever o arquivo em `specs/[nome-da-feature].spec.md` **imediatamente** ao gerar — não esperar aprovação para criar.
+- Criar com status `[x] Draft` e `[ ] Approved`.
+- Quando o dev disser explicitamente "aprovado" (ou equivalente), atualizar o arquivo para `[ ] Draft` / `[x] Approved`.
 - **Nunca** gerar código de implementação (`.kt`) nesta skill.
-- **Nunca** marcar status como `Approved` — isso é papel do desenvolvedor.
-- **Nunca** pular o checklist no L2 — é obrigatório ao final de toda spec preenchida.
+- **Nunca** omitir o Checklist de Completude — é obrigatório em toda spec gerada.
+- **Nunca** omitir o Plano Técnico de Implementação — é obrigatório em toda spec gerada.
+- **Nunca** executar `git add` / `git commit` automaticamente.
 - O checklist deve refletir o estado real da spec gerada (✅ para campos preenchidos, ❌ para campos vazios ou insuficientes).

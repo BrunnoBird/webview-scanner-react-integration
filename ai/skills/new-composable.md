@@ -64,7 +64,7 @@ Adicionalmente:
 - Sem comentários óbvios — código autoexplicativo.
 
 ## Constraints
-- **Nunca** usar `hiltViewModel()` em Composables reutilizáveis — apenas em Screen Composables.
+- **Nunca** usar `koinViewModel()` em Composables reutilizáveis — apenas em Screen Composables.
 - **Nunca** acessar Repository, UseCase ou DataSource diretamente no Composable.
 - **Nunca** adicionar feature não descrita na spec (ex: não adicionar campo de edição se a spec não pede).
 - **Nunca** criar abstração para uso único.

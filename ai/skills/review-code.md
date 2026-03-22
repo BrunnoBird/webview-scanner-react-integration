@@ -41,11 +41,11 @@ Trecho de código corrigido com explicação do motivo.
 **SOLID e design:**
 - ViewModel com mais de uma responsabilidade (viola S)
 - Lógica de negócio embutida em Screen Composable (viola S)
-- Instanciação direta de dependências sem Hilt (viola D)
+- Instanciação direta de dependências sem Koin (viola D)
 - Parâmetro genérico `config: Map<String, Any>` onde parâmetros específicos seriam melhores (viola I)
 
 **Padrões do projeto:**
-- `hiltViewModel()` usado dentro de Composable não-Screen (reutilizável)
+- `koinViewModel()` usado dentro de Composable não-Screen (reutilizável)
 - `MutableStateFlow` exposto publicamente pelo ViewModel (deve ser `asStateFlow()`)
 - `LaunchedEffect` com key incorreta (`Unit` quando deveria ser um valor que muda, ou vice-versa)
 - Acesso a Repository/DataSource diretamente na Screen sem passar pelo ViewModel

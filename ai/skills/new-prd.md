@@ -58,7 +58,9 @@ Se alguma informação não puder ser inferida da task, preencher com a melhor s
 **Arquivo a salvar:** `prds/[nome-da-feature].prd.md`
 
 ## Constraints
-- **Nunca** marcar `[ ] Approved` — só o humano faz isso.
+- Escrever o arquivo em `prds/[nome-da-feature].prd.md` **imediatamente** ao gerar — não esperar aprovação para criar.
+- Criar com status `[x] Draft` e `[ ] Approved`.
 - **Nunca** gerar spec técnica ou código nesta skill.
 - **Nunca** pedir mais detalhes antes de gerar — inferir do contexto e sinalizar suposições com `⚠️`.
+- **Nunca** executar `git add` / `git commit` automaticamente.
 - Manter o foco em produto (o quê e por quê), não em implementação (como).

@@ -40,7 +40,7 @@ Código completo dos 4 arquivos:
 
 **`domain/repository/[Name]Repository.kt`** — Interface no módulo de domínio. Métodos tipados com `suspend fun` ou `Flow` conforme definido na spec. Sem importações de `android.*` ou `data.*`.
 
-**`data/repository/[Name]RepositoryImpl.kt`** — Implementação anotada com `@Inject constructor`. Depende de DataSources (também injetados). Mapeia erros para tipos do domínio.
+**`data/repository/[Name]RepositoryImpl.kt`** — Implementação registrada no módulo Koin. Depende de DataSources (também injetados via Koin). Mapeia erros para tipos do domínio.
 
 **`data/fake/Fake[Name]Repository.kt`** — Fake que implementa a interface de domínio. Usa dados realistas. Sem delays artificiais (controlado por testes). Permite configurar respostas via propriedade pública para facilitar cenários de teste.
 
@@ -56,7 +56,7 @@ Explica as 3 opções de contrato para o método principal, com trade-offs:
 O código gerado aplica SOLID no contexto Clean Architecture Android:
 - **S:** `domain/model` define apenas entidades; `domain/repository` define apenas contratos; `data/repository` implementa apenas transporte de dados.
 - **I:** Interface do repository expõe apenas os métodos descritos na spec — sem métodos genéricos "para uso futuro".
-- **D:** ViewModel depende da interface de domínio, não da implementação — Hilt injeta `[Name]RepositoryImpl` onde `[Name]Repository` é declarado.
+- **D:** ViewModel depende da interface de domínio, não da implementação — Koin injeta `[Name]RepositoryImpl` onde `[Name]Repository` é declarado.
 
 Adicionalmente:
 - Nomes de variáveis/funções em inglês.
@@ -67,6 +67,7 @@ Adicionalmente:
 - **Nunca** importar classes `android.*` na camada `domain/` — ela deve ser pura Kotlin.
 - O Fake **deve** implementar a mesma interface que o repository real — sem duck typing.
 - A interface em `domain/repository/` é o único contrato que o ViewModel conhece — não importa de `data/` diretamente.
+- O módulo Koin deve vincular `[Name]RepositoryImpl` à interface `[Name]Repository` — o ViewModel declara dependência pela interface.
 
 ## Estrutura de Arquivos Padrão
 
@@ -78,7 +79,7 @@ domain/
     [Name]Repository.kt           ← interface (contrato para o ViewModel)
 data/
   repository/
-    [Name]RepositoryImpl.kt       ← implementação (Hilt @Inject)
+    [Name]RepositoryImpl.kt       ← implementação (Koin)
   fake/
     Fake[Name]Repository.kt       ← fake para testes unitários
 ```

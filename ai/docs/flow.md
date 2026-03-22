@@ -4,7 +4,7 @@
 
 Este projeto usa **Spec Driven Development (SDD)** com suporte de IA. A IA atua com **personas especializadas** em cada etapa — Product Manager, Arquiteto, Desenvolvedor, Revisor e QA — para garantir qualidade em todas as fases, do requisito ao código.
 
-O agente segue o princípio de **progressive disclosure**: sempre começa com o mínimo útil e avança quando você pede. Isso força revisão em cada etapa antes de avançar.
+Na **geração de spec**, o agente entrega tudo de uma vez (spec + checklist + plano técnico) para revisão e aprovação. Na **implementação**, segue o princípio de **progressive disclosure**: começa com a estrutura (L1) e avança para o código completo (L2) quando solicitado.
 
 ---
 
@@ -18,19 +18,20 @@ O agente segue o princípio de **progressive disclosure**: sempre começa com o 
                          │ skill: new-prd (Product Manager)
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  2. PRD COMPLETA: Contexto, user stories, critérios        │
-│     Dev revisa, ajusta e aprova                            │
+│  2. PRD CRIADA EM DISCO (`prds/`): Contexto, user stories  │
+│     Dev abre o arquivo localmente, revisa e ajusta.        │
+│     Para aprovar: edita o arquivo OU diz "aprovado"        │
 └────────────────────────┬────────────────────────────────────┘
-                         │ dev muda status → [x] Approved
+                         │ agente atualiza status → [ ] Draft / [x] Approved
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  3. SPEC: "Gera spec para este PRD"                        │
-│     skill: new-spec (Arquiteto)                            │
-│     L1 → esqueleto da spec                                 │
-│     L2 → spec completa + checklist de completude inline    │
-│     L3 → plano técnico (arquivos + SOLID, sem código)      │
+│  3. SPEC COMPLETA: "Gera spec para este PRD"               │
+│     skill: new-spec (Arquiteto) — nível único              │
+│     → spec preenchida (behavior, edge cases, contracts)    │
+│     → checklist de completude inline                       │
+│     → plano técnico (arquivos + SOLID, sem código)         │
 └────────────────────────┬────────────────────────────────────┘
-                         │ dev revisa checklist + aprova spec/plano
+                         │ dev edita arquivo spec OU diz "aprovado" → agente atualiza [ ] Draft / [x] Approved
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  4. IMPLEMENTAÇÃO L1:                                      │
@@ -64,10 +65,10 @@ Para qualquer integração com fonte de dados (API, banco local, sensor nativo),
 
 ```
 1. Dev → new-prd → PRD do repositório/feature
-2. Dev aprova PRD → new-spec → spec do Repository (L1 + L2 + L3)
+2. Dev aprova PRD → new-spec → spec completa do Repository (behavior + checklist + plano técnico)
 3. Dev + Time (backend/infra) → revisam spec + contrato → aprovam
 4. Dev → new-repository → interface + impl + fake gerados da spec
-5. Dev → implementa ViewModel consumindo o Repository via Hilt
+5. Dev → implementa ViewModel consumindo o Repository via Koin
 6. Dev → implementa Screen Composable consumindo o ViewModel
 7. Testes → ViewModel testado com Fake Repository → PR
 ```
@@ -94,21 +95,21 @@ Para qualquer integração com fonte de dados (API, banco local, sensor nativo),
 |---|---|---|
 | `"Revisa o PRD de [arquivo]"` | `review-prd` | Checar PRD existente isoladamente |
 | `"Revisa a spec de [arquivo]"` | `review-spec` | Checar spec existente isoladamente |
-| `"Planeja a implementação da spec"` | `new-plan` | Detalhar plano técnico separado da spec |
 
 ---
 
-## Progressive Disclosure na Spec
+## Progressive Disclosure na Implementação
 
-`new-spec` cobre spec + revisão + plano em um único artefato com 3 níveis:
+`new-spec` gera tudo de uma vez (nível único). O progressive disclosure aplica-se apenas às skills de **implementação**:
 
 ```
-L1  "gera spec para este PRD"    → esqueleto (contratos + campos obrigatórios)
-L2  "preenche a spec"            → spec completa + checklist de completude inline
-L3  "plano técnico"              → arquivos a criar, padrões SOLID, ordem de implementação
+new-screen / new-composable / new-repository
+
+L1  (padrão)         → estrutura de arquivos + assinaturas de tipos
+L2  "implementa"     → código completo seguindo a spec aprovada
 ```
 
-Após L2, o checklist mostra claramente se a spec está `PRONTA PARA APROVAÇÃO` ou `PRECISA DE REVISÃO`. Você só aprova depois de ver o checklist.
+O checklist embutido na spec mostra `PRONTA PARA APROVAÇÃO` ou `PRECISA DE REVISÃO`. Você só avança para implementação depois de aprovar a spec.
 
 ---
 
@@ -119,20 +120,18 @@ Após L2, o checklist mostra claramente se a spec está `PRONTA PARA APROVAÇÃO
 | # | O que dizer | Skill | O que receber |
 |---|---|---|---|
 | 1 | `"Quero uma PRD para [APP-10]: tela de resultado do scan"` | `new-prd` | PRD completa em `prds/scan-result.prd.md` |
-| 2 | Dev revisa, ajusta critérios → muda `→ [x] Approved` | — | PRD aprovada |
-| 3 | `"Gera spec para este PRD"` | `new-spec` | Spec L1 com Purpose derivado da PRD |
-| 4 | `"preenche a spec"` | `new-spec` | Spec L2 com happy path, edge cases + checklist inline |
-| 5 | `"plano técnico"` | `new-spec` | L3: arquivos a criar, padrões SOLID aplicados |
-| 6 | Dev revisa checklist → muda `→ [x] Approved` | — | Spec + plano aprovados |
-| 7 | `"Scaffolda a tela ScanResult"` | `new-screen` | L1: estrutura de arquivos + assinaturas |
-| 8 | `"implementa"` | `new-screen` | L2: ScanResultScreen + ScanResultViewModel (SOLID, sem Any, pt-BR) |
-| 9 | `"revisa o código de ScanResultScreen.kt"` | `review-code` | 🔴 bloqueadores, 🟡 melhorias |
-| 10 | Dev corrige → `"QA review do ScanResultScreen"` | `qa-review` | ✅ cobertos, ❌ gaps de cobertura |
-| 11 | Dev adiciona testes, abre PR | — | Spec → `[x] Implemented` |
+| 2 | Dev abre `prds/scan-result.prd.md` localmente, ajusta → edita arquivo OU diz "aprovado" | — | PRD aprovada |
+| 3 | `"Gera spec para este PRD"` | `new-spec` | Spec completa + checklist + plano técnico em `specs/scan-result.spec.md` |
+| 4 | Dev revisa checklist → edita arquivo OU diz "aprovado" | — | Spec + plano técnico aprovados |
+| 5 | `"Scaffolda a tela ScanResult"` | `new-screen` | L1: estrutura de arquivos + assinaturas |
+| 6 | `"implementa"` | `new-screen` | L2: ScanResultScreen + ScanResultViewModel (SOLID, sem Any, pt-BR) |
+| 7 | `"revisa o código de ScanResultScreen.kt"` | `review-code` | 🔴 bloqueadores, 🟡 melhorias |
+| 8 | Dev corrige → `"QA review do ScanResultScreen"` | `qa-review` | ✅ cobertos, ❌ gaps de cobertura |
+| 9 | Dev adiciona testes, abre PR | — | Spec → `[x] Implemented` |
 
 **Linha do tempo:**
 ```
-APP-10 → PRD → ✅ → Spec(L1→L2→L3) → ✅ → Impl(L1→L2) → Review → QA → PR
+APP-10 → PRD → ✅ → Spec(completa) → ✅ → Impl(L1→L2) → Review → QA → PR
 ```
 
 ---
@@ -140,10 +139,10 @@ APP-10 → PRD → ✅ → Spec(L1→L2→L3) → ✅ → Impl(L1→L2) → Revi
 ## Regras que a IA Nunca Quebra
 
 1. Não gera código de implementação sem spec aprovada.
-2. Não marca PRD, spec ou testes como aprovados — só humanos fazem isso.
+2. Não marca Approved de forma autônoma — só quando o dev declara explicitamente na conversa.
 3. Não adiciona features além do que está na spec.
-4. Não usa `hiltViewModel()` fora de Screen Composables.
-5. Não instancia dependências diretamente — sempre via Hilt/injeção.
+4. Não usa `koinViewModel()` fora de Screen Composables.
+5. Não instancia dependências diretamente — sempre via Koin/injeção.
 6. Não avança de nível sem ser solicitado.
 7. Não usa `Any` sem tipagem explícita.
 8. Não avança da PRD para spec sem aprovação explícita do dev.

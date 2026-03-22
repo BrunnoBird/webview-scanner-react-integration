@@ -52,7 +52,7 @@ O código gerado aplica SOLID no contexto Android/Compose:
 - **S:** Screen orquestra layout e delega ao ViewModel — sem lógica de negócio.
 - **O:** Comportamentos variáveis (callbacks, dados dinâmicos) injetados via parâmetros, não hardcoded.
 - **I:** Parâmetros da Screen granulares por responsabilidade — sem objeto genérico de configuração.
-- **D:** Screen recebe `viewModel: [Name]ViewModel = hiltViewModel()` — não instancia dependências.
+- **D:** Screen recebe `viewModel: [Name]ViewModel = koinViewModel()` — não instancia dependências.
 
 Adicionalmente:
 - Nomes de variáveis/funções/arquivos em inglês; textos visíveis ao usuário em pt-BR.
@@ -60,7 +60,7 @@ Adicionalmente:
 - Sem comentários óbvios — código autoexplicativo.
 
 ## Constraints
-- **Nunca** usar `hiltViewModel()` dentro de Composables reutilizáveis — apenas em Screen Composables.
+- **Nunca** usar `koinViewModel()` dentro de Composables reutilizáveis — apenas em Screen Composables.
 - **Nunca** acessar Repository diretamente na Screen — sempre via ViewModel.
 - **Nunca** expor `MutableStateFlow` publicamente no ViewModel.
 - **Nunca** adicionar feature não descrita na spec.
@@ -76,9 +76,8 @@ sealed interface ScanResultUiState {
     data class Error(val message: String) : ScanResultUiState
 }
 
-// Estrutura padrão de ViewModel
-@HiltViewModel
-class ScanResultViewModel @Inject constructor(
+// Estrutura padrão de ViewModel (Koin — sem @HiltViewModel / @Inject)
+class ScanResultViewModel(
     private val repository: ScanRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<ScanResultUiState>(ScanResultUiState.Loading)
@@ -88,7 +87,7 @@ class ScanResultViewModel @Inject constructor(
 // Estrutura padrão de Screen
 @Composable
 fun ScanResultScreen(
-    viewModel: ScanResultViewModel = hiltViewModel(),
+    viewModel: ScanResultViewModel = koinViewModel(),
     onNavigateBack: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
