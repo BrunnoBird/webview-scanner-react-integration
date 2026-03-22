@@ -27,7 +27,10 @@ Este projeto usa SDD. Toda feature começa com uma spec aprovada, **nunca com c�
 0. new-prd     → PRD criada em disco (prds/) com [x] Draft — dev revisa, edita e aprova
 1. new-spec    → spec COMPLETA criada em disco (specs/) de uma vez:
                    spec preenchida + checklist de completude + plano técnico (SOLID, sem código)
-2. Dev aprova spec → diz "aprovado" → agente atualiza status para [x] Approved
+                   + task breakdown com grupos paralelos e dependências
+2. Dev aprova spec → diz "aprovado" → agente:
+                   a) atualiza status da spec para [x] Approved
+                   b) cria tasks/[nome].tasks.md com o task breakdown para rastreamento
 3. new-screen / new-composable / new-repository → implementação (L1: tipos, L2: código)
 4. review-code → code review (🔴 bloqueadores / 🟡 melhorias / 🟢 sugestões)
 5. qa-review   → cobertura de testes (✅ cobertos / ❌ gaps) → PR
@@ -51,7 +54,7 @@ Toda resposta de **implementação** começa no **Nível 1**. Avançar só quand
 |---|---|---|
 | `new-screen` / `new-composable` / `new-repository` | L1: estrutura de arquivos + tipos | `"implementa"` / `"nível 2"` |
 
-> **Exceção — `new-spec`:** gera tudo de uma vez (spec + checklist + plano técnico) em nível único.
+> **Exceção — `new-spec`:** gera tudo de uma vez (spec + checklist + plano técnico + task breakdown com indicação de paralelismo) em nível único.
 > Não há L1/L2/L3 para spec — o dev recebe o artefato completo e aprova ou solicita ajustes.
 
 **Nunca pular níveis na implementação.** O objetivo é forçar revisão em cada etapa.
@@ -81,7 +84,7 @@ As skills são templates de prompt em `ai/skills/`. Invoque dizendo o que quer:
 | O que dizer | Arquivo | Persona | Resultado |
 |---|---|---|---|
 | `"quero uma PRD para [task]"` | `ai/skills/new-prd.md` | Product Manager | PRD completa em `prds/` |
-| `"gera spec para este PRD"` / `"cria spec para [feature]"` | `ai/skills/new-spec.md` | Arquiteto | Spec completa + checklist + plano técnico (nível único) |
+| `"gera spec para este PRD"` / `"cria spec para [feature]"` | `ai/skills/new-spec.md` | Arquiteto | Spec completa + checklist + plano técnico + task breakdown com paralelismo (nível único) |
 | `"implemente a tela [nome]"` | `ai/skills/new-screen.md` | Desenvolvedor | Screen Composable + estrutura |
 | `"cria o composable [nome]"` | `ai/skills/new-composable.md` | Desenvolvedor | Composable tipado (SOLID) |
 | `"gera repository de [nome]"` | `ai/skills/new-repository.md` | Desenvolvedor | interface + impl + fake |
@@ -104,6 +107,7 @@ Leia `ai/docs/flow.md` para o fluxo completo de uma feature com IA, incluindo ex
 ```
 prds/               ← PRDs aprovadas das tasks do board
 specs/              ← fonte da verdade de features (SDD)
+tasks/              ← task breakdown de cada spec aprovada (rastreamento durante implementação)
 ai/
   skills/           ← templates de prompt por capacidade
   docs/flow.md      ← documentação do fluxo de IA (com exemplo real)
